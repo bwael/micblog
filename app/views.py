@@ -3,20 +3,47 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-05 09:57:06
+# @Last Modified time: 2017-01-05 10:45:32
 
 import datetime
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, url_for, request, g
 
-from app.forms import LoginForm, SignUpForm, AboutMeForm
+from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm
 from app.models import User, Post, ROLE_USER, ROLE_ADMIN
 from app import app, db, lm
 
 @lm.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/publish/<int:user_id>', methods = ['POST', 'GET' ])
+@login_required
+def publish(user_id):
+    form = PublishForm()
+    posts = Post()
+    if form.validate_on_submit():
+        blog_body = request.form.get('body')
+        if not len(blog_body.strip()):
+            flash("The content is necessray!")
+            return redirect(url_for('publish', user_id = user_id))
+        posts.body = blog_body
+        posts.timestamp = datetime.datetime.now()
+        posts.user_id = user_id
+
+        try:
+            db.session.add(posts)
+            db.session.commit()
+        except:
+            flash('Database error!')
+            return redirect(url_for('publish', user_id = user_id))
+
+        flash('Publish Successful!')
+        return redirect(url_for('publish', user_id = user_id))
+
+    return render_template('publish.html',
+                            form = form)
 
 @app.route('/user/<int:user_id>', methods = ['GET', 'POST'])
 @login_required
@@ -26,12 +53,12 @@ def users(user_id):
     if not user:
         flash('The user is not exist!')
         redirect('/index')
-    blogs = user.post.all()
+    blogs = user.posts.all()
 
     return render_template(
         'user.html',
         form = form,
-        user = user)
+        user = user,
         blogs = blogs)
 
 @app.route('/sign-up', methods=['GET', 'POST'])

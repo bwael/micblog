@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 21:55:53
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-05 09:51:11
+# @Last Modified time: 2017-01-05 10:02:57
 
 #from flask_wtf import Form
 from flask_wtf import FlaskForm
@@ -28,4 +28,8 @@ class AboutMeForm(FlaskForm):
     describe = TextAreaField('about me', validators=[
         Required(), Length(max=140)])
     submit = SubmitField('Yes!')
+
+class PublishForm(FlaskForm):
+    body = TextAreaField('blog content', validators = [Required()])
+    submit = SubmitField('Submit')
 
