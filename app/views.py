@@ -3,20 +3,36 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-04 21:19:49
+# @Last Modified time: 2017-01-05 09:57:06
 
 import datetime
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, url_for, request, g
 
-from app.forms import LoginForm, SignUpForm
+from app.forms import LoginForm, SignUpForm, AboutMeForm
 from app.models import User, Post, ROLE_USER, ROLE_ADMIN
 from app import app, db, lm
 
 @lm.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/user/<int:user_id>', methods = ['GET', 'POST'])
+@login_required
+def users(user_id):
+    form = AboutMeForm()
+    user = User.query.filter(User.id == user_id).first()
+    if not user:
+        flash('The user is not exist!')
+        redirect('/index')
+    blogs = user.post.all()
+
+    return render_template(
+        'user.html',
+        form = form,
+        user = user)
+        blogs = blogs)
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():

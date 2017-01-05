@@ -3,11 +3,11 @@
 # @Author: bwael
 # @Date:   2017-01-03 21:55:53
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-04 21:23:51
+# @Last Modified time: 2017-01-05 09:51:11
 
 #from flask_wtf import Form
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, PasswordField, TextField, SubmitField
+from wtforms import BooleanField, PasswordField, TextField, SubmitField, TextAreaField
 from wtforms.validators import Required, Email, Length
 
 
@@ -24,4 +24,8 @@ class SignUpForm(FlaskForm):
         Email(), Required(), Length(max=128)])
     submit = SubmitField('Sign up')
 
+class AboutMeForm(FlaskForm):
+    describe = TextAreaField('about me', validators=[
+        Required(), Length(max=140)])
+    submit = SubmitField('Yes!')
 
