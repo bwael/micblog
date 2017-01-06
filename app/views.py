@@ -3,9 +3,10 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-05 10:45:32
+# @Last Modified time: 2017-01-06 11:22:17
 
 import datetime
+import time
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, url_for, request, g
@@ -17,6 +18,24 @@ from app import app, db, lm
 @lm.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/user/about-me/<int:user_id>', methods=["POST", "GET"])
+@login_required
+def about_me(user_id):
+    user = User.query.filter(User.id == user_id).first()
+    if request.method == "POST":
+        content = request.form.get("describe")
+        if len(content) and len(content) <= 140:
+            user.about_me = content
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except:
+                flash("Database error!")
+                return redirect(url_for("users", user_id=user_id))
+        else:
+            flash("Sorry, May be your data have some error.")
+    return redirect(url_for("users", user_id=user_id))
 
 @app.route('/publish/<int:user_id>', methods = ['POST', 'GET' ])
 @login_required
@@ -138,21 +157,30 @@ def login():
 @app.route('/')
 @app.route('/index')
 def index():
-    user = 'Man'
-    #user = { 'nickname': 'Miguel' } # 用户名
-    posts = [ #用于提交内容
-    {
-        'author':{'nickname':'John'},
-        'body':'Beautiful day in Xi\'an'
-    },
-    {
-        'author':{'nickname':'Susan'},
-        'body':'The Avangers movie was so cool'
-    }
-    ]
+
+    # user = 'bwael'
+    # #user = { 'nickname': 'Miguel' } # 用户名
+    # posts = [ #用于提交内容
+    # {
+    #     'author':{'nickname':'John'},
+    #     'body':'Beautiful day in Xi\'an'
+    # },
+    # {
+    #     'author':{'nickname':'Susan'},
+    #     'body':'The Avangers movie was so cool'
+    # }
+    # ]
+    # return render_template("index.html",
+    #                         title = 'Home',
+    #                         user = user,
+    #                         posts = posts)
+
+    #
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+
     return render_template("index.html",
-                            title = 'Home',
-                            user = user,
-                            posts = posts)
+                             title = 'Home',
+                             posts = posts
+                             )
 
 

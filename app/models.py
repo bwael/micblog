@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-04 20:49:12
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-04 21:35:54
+# @Last Modified time: 2017-01-05 11:18:00
 
 from app import db
 
@@ -17,6 +17,8 @@ class User(db.Model):
     email = db.Column(db.String(120), index = True, unique = True)
     role = db.Column(db.SmallInteger, default = ROLE_USER)
     posts = db.relationship('Post', backref = 'author', lazy = 'dynamic')
+    about_me = db.Column(db.String(140))
+    last_seen = db.Column(db.DateTime)
 
     def is_authenticated(self):
         return True
