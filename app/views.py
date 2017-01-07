@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-06 11:22:17
+# @Last Modified time: 2017-01-07 12:23:52
 
 import datetime
 import time
@@ -13,6 +13,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 
 from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm
 from app.models import User, Post, ROLE_USER, ROLE_ADMIN
+from app.utils import PER_PAGE
 from app import app, db, lm
 
 @lm.user_loader
@@ -64,14 +65,31 @@ def publish(user_id):
     return render_template('publish.html',
                             form = form)
 
-@app.route('/user/<int:user_id>', methods = ['GET', 'POST'])
+@app.route('/user/<int:user_id>',defaults = {'page':1}, methods = ['GET', 'POST'])
+@app.route('/user/<int:user_id>/page/<int:page>', methods = ['GET', 'POST'])
 @login_required
-def users(user_id):
+def users(user_id, page):
     form = AboutMeForm()
     user = User.query.filter(User.id == user_id).first()
+    #blogs = user.posts.paginate(1, PER_PAGE, False).items
+    '''
     if not user:
         flash('The user is not exist!')
         redirect('/index')
+    blogs = user.posts.all()'''
+
+    if user_id != current_user.id:
+        redirect('/index')
+        flash('Sorry, you can only view your profile!', 'error')
+
+
+    pagination = Post.query.filter_by(
+        user_id = current_user.id
+        ).order_by(
+        db.desc(Post.timestamp)
+        ).paginate(page, PER_PAGE, False)
+
+    #blogs = pagination.items
     blogs = user.posts.all()
 
     return render_template(
@@ -79,6 +97,7 @@ def users(user_id):
         form = form,
         user = user,
         blogs = blogs)
+        #pagination = pagination)
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():

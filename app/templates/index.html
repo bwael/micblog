@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block content %}
+{% block index %}
     {% if not current_user.is_authenticated %}
     <h1>Hi, Guys!</h1>
     {% else %}
@@ -10,4 +10,26 @@
         <div><p>{{ post.author.nickname }} says: <b>{{ post.body }}</b></p>
     </div>
     {% endfor %}
+
+
+    {% if pagination %}
+        {% for blog in blogs %}
+        <p style="color:#ff6600;">{{ blog.body }}</p>
+        <p style="color:#4c4c4c;">{{ blog.timestamp }}</p>
+        <hr />
+        {% endfor %}
+
+        {% if pagination.has_prev %} {# 分页的前端展示 #}
+        <a href="{{ url_for('users', user_id=current_user.id, page=pagination.prev_num) }}"><< prev</a>
+        {% else %}
+        << None
+        {% endif %} |
+        {% if pagination.has_next %}
+        <a href="{{ url_for('users', user_id=current_user.id, page=pagination.next_num) }}">next >></a>
+        {% else %}
+        None >>
+        {% endif %}
+    {% else %}
+    <p style="color:blue;">the guy is so lazy.....</p>
+    {% endif %}
 {% endblock %}
