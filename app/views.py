@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-07 12:23:52
+# @Last Modified time: 2017-01-07 17:47:07
 
 import datetime
 import time
@@ -72,15 +72,15 @@ def users(user_id, page):
     form = AboutMeForm()
     user = User.query.filter(User.id == user_id).first()
     #blogs = user.posts.paginate(1, PER_PAGE, False).items
-    '''
+
     if not user:
         flash('The user is not exist!')
-        redirect('/index')
-    blogs = user.posts.all()'''
+        return redirect(url_for('index'))
+    #blogs = user.posts.all()
 
     if user_id != current_user.id:
-        redirect('/index')
         flash('Sorry, you can only view your profile!', 'error')
+        return redirect(url_for('index'))
 
 
     pagination = Post.query.filter_by(
@@ -102,30 +102,36 @@ def users(user_id, page):
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     form = SignUpForm()
-    user = User()
     if form.validate_on_submit():
-        user_name = request.form.get('user_name')
-        user_email = request.form.get('user_email')
+        user = User(email = form.user_email.data,
+                    name = form.user_name.data,
+                    password = form.password.data,
+                    role = ROLE_USER)
 
-        register_check = User.query.filter(db.or_(
-            User.nickname == user_name, User.email == user_email)).first()
-        if register_check:
-            flash("error: The user's name or email already exists!")
+        #user_name = request.form.get('user_name')
+        #user_email = request.form.get('user_email')
+
+        # register_check = User.query.filter(db.or_(
+        #     User.nickname == user_name, User.email == user_email)).first()
+        # if register_check:
+        #     flash("error: The user's name or email already exists!")
+        #     return redirect('/sign-up')
+
+        #复查
+        # if len(user_name) and len(user_email) and len(password):
+        #     user.name = user_name
+        #     user.email = user_email
+        #     user.password = password
+        #     user.role = ROLE_USER
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            flash("The Database error!")
             return redirect('/sign-up')
 
-        if len(user_name) and len(user_email):
-            user.nickname = user_name
-            user.email = user_email
-            user.role = ROLE_USER
-            try:
-                db.session.add(user)
-                db.session.commit()
-            except:
-                flash("The Database error!")
-                return redirect('/sign-up')
-
-            flash("Sign up successful!")
-            return redirect('/index')
+        flash("Sign up successful! You can login now.")
+        return redirect('/login')
 
     return render_template(
         "sign_up.html",
@@ -135,6 +141,7 @@ def sign_up():
 @login_required
 def logout():
     logout_user()
+    flash('You have been logged out.')
     return redirect(url_for('index'))
 
 @app.route('/login', methods = ['GET','POST'])
@@ -142,12 +149,12 @@ def login():
     #验证用户是否已经通过验证
     if current_user.is_authenticated:
         return redirect('index')
-    #注册验证
+    #登陆验证
     form = LoginForm()
     if form.validate_on_submit():
         user = User.login_check(request.form.get('user_name'))
-        if user:
-            login_user(user)
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
             user.last_seen = datetime.datetime.now()
 
             try:
@@ -162,7 +169,7 @@ def login():
             #return redirect(url_for("users", user_id=current_user.id))
             return redirect('/index')
         else:
-            flash('Login failed, Your name is not exist!')
+            flash('Login failed, Invalid username or password')
             return redirect('/login')
 
         '''flash('Login request for Name:' + form.name.data)
@@ -170,7 +177,7 @@ def login():
         flash('remember_me:' + str(form.remember_me.data))
         return redirect('/index')'''
     return render_template("login.html",
-                            title = 'Sign In',
+                            title = 'Log In',
                             form = form)
 
 @app.route('/')

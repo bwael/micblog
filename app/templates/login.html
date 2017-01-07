@@ -1,8 +1,15 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block content %}
-<h1>Sign In</h1>
-    <form action="/login" method="post" name="login">
+<div class="page-header">
+<h1>Log In</h1>
+</div>
+    <div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+    <br>
+    <p>New user? <a href="{{ url_for('sign_up') }}">Click here to sign up</a>.</p>
+    <!-- <form action="/login" method="post" name="login">
         {{form.hidden_tag()}}
         <p>
             Please enter your Name:<br>
@@ -12,15 +19,15 @@
             {% endfor %}<br>
         </p>
 
-        <!--<p>
+        <p>
             Password:<br>
             {{ form.password }}<br>
             {% for error in form.errors.password %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}<br>
-        </p>  -->
+        </p>
 
         <p>{{form.remember_me}} Remember Me?</p>
-        <p><input type="submit" value="Sign In"></p>  
-    </form>
+        <p><input type="submit" value="Sign In"></p>
+    </form> -->
 {% endblock %}

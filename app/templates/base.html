@@ -67,10 +67,8 @@ Welcome to microblog
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block content %}
-<hr />
+    {% block message %}
+    <hr />
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     <ul>
@@ -82,6 +80,9 @@ Welcome to microblog
     </ul>
     {% endif %}
     {% endwith %}
-    {% block index %}{% endblock %}
-    {% block js %} {% endblock %}
+    {% endblock %}
 {% endblock %}
+
+
+{% block content %}{% endblock %}
+{% block js %}{% endblock %}
