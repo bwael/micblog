@@ -3,10 +3,11 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 12:21:23
+# @Last Modified time: 2017-01-10 12:52:20
 
 import datetime
 import time
+import hashlib
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, url_for, request, g
@@ -36,6 +37,8 @@ def edit_profile(user_id):
     form = EditProfileForm()
     if form.validate_on_submit():
         user.email = form.email.data
+        user.avatar_hash= hashlib.md5(
+            form.email.data.encode('utf-8')).hexdigest()
         user.location = form.location.data
         user.about_me = form.about_me.data
         try:

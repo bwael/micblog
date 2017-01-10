@@ -27,7 +27,8 @@
     {% include 'post.html' %}
 {% endfor %}-->
 <div calss="page-header">
-
+<img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+<div class="profile-header">
 <h1>{{ user.name }}</h1>
 
 {% if user.name or user.location %}
@@ -63,6 +64,7 @@ Last seen : {{ user.last_seen }}
 
 <a href="{{ url_for('publish', user_id=user.id) }}">Want to publish blogs?</a>
 
+</div>
 <hr />
 {% if blogs | length %}
     {% for blog in blogs %}
@@ -74,6 +76,7 @@ Last seen : {{ user.last_seen }}
 {% else %}
     <p style="color:blue;">the guy is so lazy.....</p>
 {% endif %}
+
 
 
 </div>

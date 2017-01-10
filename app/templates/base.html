@@ -1,7 +1,12 @@
 {% extends "bootstrap/base.html" %}
 <!-- <script src="/static/js/moment-with-locales.js"></script> -->
+{% block head %}
 {{ moment.include_jquery() }}
 {{ moment.include_moment() }}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+{% endblock %}
+
 {% block title %}
 {% if title %}
 {{ title }} - microblog

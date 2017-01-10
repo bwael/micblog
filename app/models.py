@@ -3,12 +3,14 @@
 # @Author: bwael
 # @Date:   2017-01-04 20:49:12
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-08 12:51:03
+# @Last Modified time: 2017-01-10 12:40:12
 
 from datetime import datetime
+import hashlib
 
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import request
 from flask_login import UserMixin, AnonymousUserMixin, login_manager
 
 ROLE_USER = 0
@@ -27,6 +29,28 @@ class User(db.Model):
     about_me = db.Column(db.String(140))
     member_since = db.Column(db.DateTime(), default=datetime.now)
     last_seen = db.Column(db.DateTime(), default=datetime.now)
+    avatar_hash = db.Column(db.String(32))
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+    # if self.role is None:
+    #     if self.email == current_app.config['FLASKY_ADMIN']:
+    #         self.role = Role.query.filter_by(permissions=0xff).first()
+    #     if self.role is None:
+    #         self.role = Role.query.filter_by(default=True).first()
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = hashlib.md5(
+                self.email.encode('utf-8')).hexdigest()
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash or hashlib.md5(
+            self.email.encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=hash, size=size, default=default, rating=rating)
 
     def is_authenticated(self):
         return True
