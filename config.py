@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 21:55:53
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-10 20:52:43
+# @Last Modified time: 2017-01-10 22:10:01
 
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'venv/Lib/site-packages'))
 
@@ -16,5 +16,6 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 CSRF_ENABLED = True
 SECRET_KEY = 'bwael'
 
-FLASKY_POSTS_PER_PAGE = 10
+FLASKY_POSTS_PER_PAGE = 20
 FLASKY_FOLLOWERS_PER_PAGE = 50
+FLASKY_COMMENTS_PER_PAGE =10

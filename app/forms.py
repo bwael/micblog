@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 21:55:53
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-10 14:28:48
+# @Last Modified time: 2017-01-10 22:17:24
 
 #from flask_wtf import Form
 from flask_wtf import FlaskForm
@@ -14,6 +14,9 @@ from wtforms import ValidationError
 
 from app.models import User
 
+class CommentForm(FlaskForm):
+    body = StringField('', validators = [Required()])
+    submit = SubmitField('Submit')
 
 class LoginForm(FlaskForm):
     user_name = TextField('Name', validators=[

@@ -1,6 +1,23 @@
-<table>
-    <tr valign="top">
-        <td><img src="{{ post.author.avatar(50) }}"></td>
-        <td><i>{{ post.author.name }} says: </i><br>{{ post.body }}</td>
-    </tr>
-</table>
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %}MicroBlog - Post{% endblock %}
+
+{% block page_content %}
+{% include '_posts.html' %}
+<h4 id="comments">Comments</h4>
+
+{% if current_user.is_authenticated %}
+<div class="comment-form">
+    {{ wtf.quick_form(form) }}
+</div>
+{% endif %}
+
+{% include '_comments.html' %}
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, 'post', fragment='#comments', id=posts[0].id) }}
+</div>
+{% endif %}
+{% endblock %}

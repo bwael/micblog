@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 20:54:48
+# @Last Modified time: 2017-01-10 22:34:34
 
 import datetime
 import time
@@ -11,16 +11,42 @@ import hashlib
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, \
-     url_for, request, g, current_app
+     url_for, request, g, current_app, make_response
 
-from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm, EditProfileForm
-from app.models import User, Post, ROLE_USER, ROLE_ADMIN, Role
+from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm, \
+    EditProfileForm, CommentForm
+from app.models import User, Post, ROLE_USER, ROLE_ADMIN, Role, Comment
 from app.utils import PER_PAGE
 from app import app, db, lm
 
 @lm.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+
+@app.route('/post/<int:id>', methods=['GET', 'POST'])
+def post(id):
+    post = Post.query.get_or_404(id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=post,
+                          author=current_user._get_current_object())
+        db.session.add(comment)
+        db.session.commit()
+        flash('Your comment has been published.')
+        return redirect(url_for('post', id=post.id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    if page == -1:
+        page = (post.comments.count() - 1) // \
+            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False)
+    comments = pagination.items
+    return render_template('post.html', posts=[post], form=form,
+                           comments=comments, pagination=pagination)
 
 @app.route('/follow/<name>')
 @login_required
@@ -319,10 +345,10 @@ def login():
             flash('Login failed, Invalid username or password')
             return redirect('/login')
 
-        '''flash('Login request for Name:' + form.name.data)
-        flash('passwd:' + str(form.password.data))
-        flash('remember_me:' + str(form.remember_me.data))
-        return redirect('/index')'''
+        # flash('Login request for Name:' + form.name.data)
+        # flash('passwd:' + str(form.password.data))
+        # flash('remember_me:' + str(form.remember_me.data))
+        # return redirect('/index')
     return render_template("login.html",
                             title = 'Log In',
                             form = form)
@@ -332,8 +358,10 @@ def login():
 def index():
     form = PublishForm()
     user = None
+    show_followed = False
     #验证用户是否已经通过验证
     if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
         user = User.query.filter(User.id == current_user.id).first()
         if form.validate_on_submit():
             post = Post(body=form.body.data,
@@ -341,7 +369,10 @@ def index():
             db.session.add(post)
             db.session.commit()
             return redirect(url_for('index'))
-
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
     #posts = Post.query.order_by(Post.timestamp.desc()).all()
 
     # user = 'bwael'
@@ -361,8 +392,8 @@ def index():
     #                         user = user,
     #                         posts = posts)
 
+
     #分页显示博客文章列表
-    query = Post.query
     page = request.args.get('page', 1, type=int)
     pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
@@ -374,7 +405,7 @@ def index():
                             form = form,
                             user = user,
                             posts = posts,
-                            pagination=pagination
-                            )
+                            pagination=pagination,
+                            show_followed = show_followed)
 
 
