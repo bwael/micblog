@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 15:06:01
+# @Last Modified time: 2017-01-10 18:51:24
 
 import datetime
 import time
@@ -11,7 +11,7 @@ import hashlib
 
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, \
-     url_for, request, g
+     url_for, request, g, current_app
 
 from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm, EditProfileForm
 from app.models import User, Post, ROLE_USER, ROLE_ADMIN, Role
@@ -111,12 +111,12 @@ def publish(user_id):
     return render_template('publish.html',
                             form = form)
 
-@app.route('/user/<int:user_id>',defaults = {'page':1}, methods = ['GET', 'POST'])
-@app.route('/user/<int:user_id>/page/<int:page>', methods = ['GET', 'POST'])
+@app.route('/user/<int:user_id>', methods = ['GET', 'POST'])
+#@app.route('/user/<int:user_id>/page/<int:page>', methods = ['GET', 'POST'])
 @login_required
-def users(user_id, page):
+def users(user_id):
     #form = AboutMeForm()
-    user = User.query.filter(User.id == user_id).first()
+    user = User.query.filter_by(id = user_id).first()
     #blogs = user.posts.paginate(1, PER_PAGE, False).items
 
     #使用模板的404.html
@@ -126,26 +126,29 @@ def users(user_id, page):
         return render_template('404.html')
     #blogs = user.posts.all()
 
-    if user_id != current_user.id:
-        flash('Sorry, you can only view your profile!', 'error')
-        return redirect(url_for('index'))
+    # if user_id != current_user.id:
+    #     flash('Sorry, you can only view your profile!', 'error')
+    #     return redirect(url_for('index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False)
+    blogs = pagination.items
+    # pagination = Post.query.filter_by(
+    #     user_id = current_user.id
+    #     ).order_by(
+    #     db.desc(Post.timestamp)
+    #     ).paginate(page, PER_PAGE, False)
 
+    #blogs = user.posts.all()
 
-    pagination = Post.query.filter_by(
-        user_id = current_user.id
-        ).order_by(
-        db.desc(Post.timestamp)
-        ).paginate(page, PER_PAGE, False)
-
-    #blogs = pagination.items
-    blogs = user.posts.all()
 
     return render_template(
         'user.html',
         #form = form,
         user = user,
-        blogs = blogs)
-        #pagination = pagination)
+        posts = blogs,
+        pagination = pagination)
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
@@ -234,18 +237,19 @@ def login():
 @app.route('/', methods = ['GET','POST'])
 @app.route('/index', methods = ['GET','POST'])
 def index():
-    # if not user:
-    #     flash('The user is not exist!')
-    #     return redirect('/')
     form = PublishForm()
-    #user = User.query.filter(User.id == user_id).first()
-    if form.validate_on_submit():
-        post = Post(body=form.body.data,
-                    author=current_user._get_current_object())
-        db.session.add(post)
-        db.session.commit()
-        return redirect(url_for('index'))
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    user = None
+    #验证用户是否已经通过验证
+    if current_user.is_authenticated:
+        user = User.query.filter(User.id == current_user.id).first()
+        if form.validate_on_submit():
+            post = Post(body=form.body.data,
+                        author=current_user._get_current_object())
+            db.session.add(post)
+            db.session.commit()
+            return redirect(url_for('index'))
+
+    #posts = Post.query.order_by(Post.timestamp.desc()).all()
 
     # user = 'bwael'
     # #user = { 'nickname': 'Miguel' } # 用户名
@@ -264,12 +268,20 @@ def index():
     #                         user = user,
     #                         posts = posts)
 
-    #
+    #分页显示博客文章列表
+    query = Post.query
+    page = request.args.get('page', 1, type=int)
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False)
+    posts = pagination.items
 
     return render_template("index.html",
-                             title = 'Home',
-                             form = form,
-                             posts = posts
-                             )
+                            title = 'Home',
+                            form = form,
+                            user = user,
+                            posts = posts,
+                            pagination=pagination
+                            )
 
 

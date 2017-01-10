@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_macros.html" as macros %}
 
 {% block page_content %}
 <div calss="page-header">
@@ -23,7 +24,7 @@
 <!-- <a class="btn btn-default" href="http://127.0.0.1:8888/edit-profile">
     Edit Profile
 </a> -->
-<a class="btn btn-default" href="{{ url_for('edit_profile',user_id = current_user.id) }}">
+<a class="btn btn-default" href="{{ url_for('edit_profile', user_id = current_user.id) }}">
     Edit Profile
 </a>
 {% endif %}
@@ -37,24 +38,22 @@ Last seen : {{ user.last_seen }} -->
 </p>
 <p>{{ user.posts.count() }} blog posts. </p>
 
+{% if user == current_user %}
 <a href="{{ url_for('publish', user_id=user.id) }}">Want to publish blogs?</a>
-
+{% endif %}
 </div>
-<hr />
-{% if blogs | length %}
-    {% for blog in blogs %}
-    <p>{{ blog.body }}</p>
-    <!-- <p>{{ moment(blog.timestamp).fromNow() }}</p> -->
-    <p>{{ moment(blog.timestamp).format('YYYY MMMM Do, h:mm:ss a') }}</p>
-    <hr />
-    {% endfor %}
-{% else %}
-    <p style="color:blue;">the guy is so lazy.....</p>
+</div>
+
+<div class="post-tabs">
+{% include '_posts.html' %}
+</div>
+
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, 'users', user_id = user.id) }}
+</div>
 {% endif %}
 
-
-
-</div>
 {% endblock %}
 
 {% block js %}

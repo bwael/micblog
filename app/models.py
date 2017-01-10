@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-04 20:49:12
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-10 15:55:14
+# @Last Modified time: 2017-01-10 18:35:57
 
 from datetime import datetime
 import hashlib
@@ -143,7 +143,7 @@ login_manager.anonymous_user = AnonymousUser
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime)
+    timestamp = db.Column(db.DateTime(), default=datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     @staticmethod

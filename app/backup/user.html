@@ -7,6 +7,19 @@
     </body>
 </html>
 
+<div>
+<hr />
+{% if blogs | length %}
+    {% for blog in blogs %}
+    <p>{{ blog.body }}</p>
+    <!-- <p>{{ moment(blog.timestamp).fromNow() }}</p> -->
+    <p>{{ moment(blog.timestamp).format('YYYY MMMM Do, h:mm:ss a') }}</p>
+    <hr />
+    {% endfor %}
+{% else %}
+    <p style="color:blue;">the guy is so lazy.....</p>
+{% endif %}
+</div>
 
 <!--
 <p>Name: {{ user.nickname }}</p>
