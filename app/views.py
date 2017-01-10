@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 18:51:24
+# @Last Modified time: 2017-01-10 19:34:03
 
 import datetime
 import time
@@ -110,6 +110,22 @@ def publish(user_id):
 
     return render_template('publish.html',
                             form = form)
+
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author:
+        abort(403)
+    form = PublishForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        db.session.commit()
+        flash('The post has been updated.')
+        return redirect(url_for('users', user_id=current_user.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
 
 @app.route('/user/<int:user_id>', methods = ['GET', 'POST'])
 #@app.route('/user/<int:user_id>/page/<int:page>', methods = ['GET', 'POST'])
