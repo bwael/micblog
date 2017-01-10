@@ -1,10 +1,16 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block content %}
+{% block page_content %}
+    <div class="page-header">
     {% if not current_user.is_authenticated %}
-    <h1>Hi, Guys!</h1>
+    <h1>Hi, Guys!</h1></div>
     {% else %}
     <h1>Welcome back, {{ current_user.name }}!</h1>
+    </div>
+    <div>
+    {{ wtf.quick_form(form) }}
+    </div>
     {% endif %}
 
     {% for post in posts %}

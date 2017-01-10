@@ -1,31 +1,6 @@
 {% extends "base.html" %}
 
-{% block content %}
-<!--
-<p>Name: {{ user.nickname }}</p>
-<p>Email: {{ user.email }}</p>
-
-<hr>
-{% if blogs | length %}
-    {% for blog in blogs %}
-    <p>{{ blog.body }}</p>
-    <p>{{ blog.timestamp.strftime("%a, %d %b %Y %H:%M:%S") }}</p>
-    <hr />
-    {% endfor%}
-{% else %}
-    <p style="color:blue;">the guy is so lazy......</p>
-{% endif %}
-
-<table>
-    <tr valign="top">
-        <td><h1>User: {{ user.nickname }}</h1></td>
-        <td><h1>User: {{ user.email }}</h1></td>
-    </tr>
-</table>
-<hr>
-{% for post in posts %}
-    {% include 'post.html' %}
-{% endfor %}-->
+{% block page_content %}
 <div calss="page-header">
 <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
 <div class="profile-header">

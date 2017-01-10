@@ -75,7 +75,13 @@ Welcome to microblog
         </div>
     </div>
 </div>
-    {% block message %}
+
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+{% block message %}
     <hr />
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -88,12 +94,8 @@ Welcome to microblog
     </ul>
     {% endif %}
     {% endwith %}
-    {% endblock %}
 {% endblock %}
-
-
-{% block content %}
-{{ moment.include_jquery() }}
-{{ moment.include_moment() }}
+{% block page_content %}{% endblock %}
+</div>
 {% endblock %}
 {% block js %}{% endblock %}

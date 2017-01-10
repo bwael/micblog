@@ -1,9 +1,13 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block content %}
-<form action="{{ url_for('publish', user_id = current_user.id) }}" method = 'POST' name = 'publish'>
-    {{ form.hidden_tag() }}
-<p>{{ form.body }}</p>
-<p>{{ form.submit }}</p>
-</form>
+{% block title %}Flasky - Edit Post{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Edit Post</h1>
+</div>
+<div>
+    {{ wtf.quick_form(form) }}
+</div>
 {% endblock %}

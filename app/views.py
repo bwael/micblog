@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 12:52:20
+# @Last Modified time: 2017-01-10 14:25:11
 
 import datetime
 import time
@@ -228,9 +228,21 @@ def login():
                             title = 'Log In',
                             form = form)
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods = ['GET','POST'])
+@app.route('/index', methods = ['GET','POST'])
 def index():
+    # if not user:
+    #     flash('The user is not exist!')
+    #     return redirect('/')
+    form = PublishForm()
+    #user = User.query.filter(User.id == user_id).first()
+    if form.validate_on_submit():
+        post = Post(body=form.body.data,
+                    author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('index'))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
 
     # user = 'bwael'
     # #user = { 'nickname': 'Miguel' } # 用户名
@@ -250,10 +262,10 @@ def index():
     #                         posts = posts)
 
     #
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
 
     return render_template("index.html",
                              title = 'Home',
+                             form = form,
                              posts = posts
                              )
 

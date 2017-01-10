@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+    </body>
+</html>
+{% block content %}
+<form action="{{ url_for('publish', user_id = current_user.id) }}" method = 'POST' name = 'publish'>
+    {{ form.hidden_tag() }}
+<p>{{ form.body }}</p>
+<p style="">{{ form.submit }}</p>
+</form>
+{% endblock %}
