@@ -35,7 +35,7 @@
         <p>
             {% if user.name %}{{ user.name }}<br>{% endif %}
             {% if user.location %}
-                From : <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a><br>
+                From : <a href="https://maps.google.com/?q={{ user.location }}">{{ user.location }}</a><br>
             {% endif %}
         </p>
 {% endif %}
@@ -55,10 +55,10 @@
 
 
 <p style="color:#4c4c4c;">
-<!-- Member since : {{ moment(user.member_since).format('MMMM Do YYYY, h:mm:ss a') }}
-Last seen: {{ moment(user.last_seen).fromNow() }} -->
-Member since : {{ user.member_since }}
-Last seen : {{ user.last_seen }}
+Member since : {{ moment(user.member_since).format('YYYY MMMM Do, h:mm:ss a') }}
+    Last seen: {{ moment(user.last_seen).fromNow() }}
+<!-- Member since : {{ user.member_since }}
+Last seen : {{ user.last_seen }} -->
 </p>
 <p>{{ user.posts.count() }} blog posts. </p>
 
@@ -70,7 +70,7 @@ Last seen : {{ user.last_seen }}
     {% for blog in blogs %}
     <p>{{ blog.body }}</p>
     <!-- <p>{{ moment(blog.timestamp).fromNow() }}</p> -->
-    <p>{{ blog.timestamp }}</p>
+    <p>{{ moment(blog.timestamp).format('YYYY MMMM Do, h:mm:ss a') }}</p>
     <hr />
     {% endfor %}
 {% else %}
