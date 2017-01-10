@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 12:12:34
+# @Last Modified time: 2017-01-10 12:21:23
 
 import datetime
 import time
@@ -27,11 +27,11 @@ def edit_profile(user_id):
 
     if not user:
         flash('The user is not exist!')
-        return redirect(url_for('index'))
+        return redirect(url_for('edit_profile',user_id = current_user.id))
 
     if user_id != current_user.id:
         flash('Sorry, you can only edit your own profile!', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('edit_profile',user_id = current_user.id))
 
     form = EditProfileForm()
     if form.validate_on_submit():
