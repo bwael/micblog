@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 22:34:34
+# @Last Modified time: 2017-01-10 23:10:11
 
 import datetime
 import time
@@ -23,7 +23,38 @@ from app import app, db, lm
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.route('/moderate')
+@login_required
+def moderate():
+    page = request.args.get('page', 1, type=int)
+    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False)
+    comments = pagination.items
+    return render_template('moderate.html', comments=comments,
+                           pagination=pagination, page=page)
 
+
+@app.route('/moderate/enable/<int:id>')
+@login_required
+def moderate_enable(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = False
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('moderate',
+                            page=request.args.get('page', 1, type=int)))
+
+
+@app.route('/moderate/disable/<int:id>')
+@login_required
+def moderate_disable(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = True
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('moderate',
+                            page=request.args.get('page', 1, type=int)))
 
 @app.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):

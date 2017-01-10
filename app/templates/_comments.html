@@ -21,9 +21,9 @@
                     {% endif %}
                 {% endif %}
             </div>
-            {% if moderate %}
+            {% if moderate and comment.author_id == current_user.id %}
                 <br>
-                {% if comment.disabled %}
+                {% if comment.disabled  %}
                 <a class="btn btn-default btn-xs" href="{{ url_for('moderate_enable', id=comment.id, page=page) }}">Enable</a>
                 {% else %}
                 <a class="btn btn-danger btn-xs" href="{{ url_for('moderate_disable', id=comment.id, page=page) }}">Disable</a>

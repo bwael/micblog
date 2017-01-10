@@ -51,20 +51,28 @@ Welcome to microblog
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if not current_user.is_authenticated %}
-                |
+
+
                 <li>
                     <a href="{{ url_for('login') }}">
                         Log in
                     </a>
                 </li>
-                or
+
                 <li>
                     <a href="{{ url_for('sign_up') }}">
                         Sign up
                     </a>
                 </li>
                 {% else %}
-                |
+
+                {% if True%}
+                <li>
+                    <a href="{{ url_for('moderate') }}">
+                        Moderate Comments
+                    </a>
+                </li>
+                {% endif %}
                 <li>
                     <a href="{{ url_for('logout') }}">
                         Logout
