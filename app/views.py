@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-07 17:47:07
+# @Last Modified time: 2017-01-10 12:12:34
 
 import datetime
 import time
@@ -11,8 +11,8 @@ import time
 from flask_login import login_user, logout_user, current_user, login_required
 from flask import render_template, flash, redirect, session, url_for, request, g
 
-from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm
-from app.models import User, Post, ROLE_USER, ROLE_ADMIN
+from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm, EditProfileForm
+from app.models import User, Post, ROLE_USER, ROLE_ADMIN, Role
 from app.utils import PER_PAGE
 from app import app, db, lm
 
@@ -20,29 +20,71 @@ from app import app, db, lm
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/user/about-me/<int:user_id>', methods=["POST", "GET"])
+@app.route('/edit-profile/<int:user_id>', methods=['GET','POST'])
 @login_required
-def about_me(user_id):
+def edit_profile(user_id):
     user = User.query.filter(User.id == user_id).first()
-    if request.method == "POST":
-        content = request.form.get("describe")
-        if len(content) and len(content) <= 140:
-            user.about_me = content
-            try:
-                db.session.add(user)
-                db.session.commit()
-            except:
-                flash("Database error!")
-                return redirect(url_for("users", user_id=user_id))
-        else:
-            flash("Sorry, May be your data have some error.")
-    return redirect(url_for("users", user_id=user_id))
 
-@app.route('/publish/<int:user_id>', methods = ['POST', 'GET' ])
+    if not user:
+        flash('The user is not exist!')
+        return redirect(url_for('index'))
+
+    if user_id != current_user.id:
+        flash('Sorry, you can only edit your own profile!', 'error')
+        return redirect(url_for('index'))
+
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        user.email = form.email.data
+        user.location = form.location.data
+        user.about_me = form.about_me.data
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            flash("Database error!")
+            return redirect(url_for("user", user_id=user_id))
+        flash("Your profile has been update!")
+            #return redirect(url_for("users", user_id=user_id))
+    else:
+        flash("Sorry, May be your data have some error.")
+
+    form.email.data = user.email
+    form.location.data = user.location
+    form.about_me.data = user.about_me
+
+    return render_template('edit_profile.html',
+                            form = form)
+    #return redirect(url_for("users", user_id=user_id))
+
+# @app.route('/user/about-me/<int:user_id>', methods=["POST", "GET"])
+# @login_required
+# def about_me(user_id):
+#     user = User.query.filter(User.id == user_id).first()
+#     if request.method == "POST":
+#         content = request.form.get("describe")
+#         if len(content) and len(content) <= 140:
+#             user.about_me = content
+#             try:
+#                 db.session.add(user)
+#                 db.session.commit()
+#             except:
+#                 flash("Database error!")
+#                 return redirect(url_for("users", user_id=user_id))
+#         else:
+#             flash("Sorry, May be your data have some error.")
+#     return redirect(url_for("users", user_id=user_id))
+
+@app.route('/publish/<int:user_id>', methods = ['POST', 'GET'])
 @login_required
 def publish(user_id):
     form = PublishForm()
     posts = Post()
+
+    if user_id != current_user.id:
+        flash('Sorry, you can only edit your publish!', 'error')
+        return redirect(url_for('index'))
+
     if form.validate_on_submit():
         blog_body = request.form.get('body')
         if not len(blog_body.strip()):
@@ -69,7 +111,7 @@ def publish(user_id):
 @app.route('/user/<int:user_id>/page/<int:page>', methods = ['GET', 'POST'])
 @login_required
 def users(user_id, page):
-    form = AboutMeForm()
+    #form = AboutMeForm()
     user = User.query.filter(User.id == user_id).first()
     #blogs = user.posts.paginate(1, PER_PAGE, False).items
 
@@ -94,7 +136,7 @@ def users(user_id, page):
 
     return render_template(
         'user.html',
-        form = form,
+        #form = form,
         user = user,
         blogs = blogs)
         #pagination = pagination)
@@ -105,8 +147,9 @@ def sign_up():
     if form.validate_on_submit():
         user = User(email = form.user_email.data,
                     name = form.user_name.data,
-                    password = form.password.data,
-                    role = ROLE_USER)
+                    password = form.password.data)
+                    #role = ROLE_USER)
+                    #role_id = ROLE_USER)
 
         #user_name = request.form.get('user_name')
         #user_email = request.form.get('user_email')
@@ -140,6 +183,7 @@ def sign_up():
 @app.route('/logout')
 @login_required
 def logout():
+    current_user.ping()
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('index'))
@@ -148,6 +192,7 @@ def logout():
 def login():
     #验证用户是否已经通过验证
     if current_user.is_authenticated:
+        current_user.ping()
         return redirect('index')
     #登陆验证
     form = LoginForm()

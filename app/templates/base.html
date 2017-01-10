@@ -1,4 +1,7 @@
 {% extends "bootstrap/base.html" %}
+<!-- <script src="/static/js/moment-with-locales.js"></script> -->
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
 {% block title %}
 {% if title %}
 {{ title }} - microblog
@@ -84,5 +87,8 @@ Welcome to microblog
 {% endblock %}
 
 
-{% block content %}{% endblock %}
+{% block content %}
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+{% endblock %}
 {% block js %}{% endblock %}

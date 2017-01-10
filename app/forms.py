@@ -3,11 +3,12 @@
 # @Author: bwael
 # @Date:   2017-01-03 21:55:53
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-07 16:45:40
+# @Last Modified time: 2017-01-10 11:36:11
 
 #from flask_wtf import Form
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, PasswordField, TextField, SubmitField, TextAreaField
+from wtforms import BooleanField, PasswordField, TextField, SubmitField,\
+         TextAreaField, StringField
 from wtforms.validators import Required, Email, Length, EqualTo
 from wtforms import ValidationError
 
@@ -18,7 +19,7 @@ class LoginForm(FlaskForm):
     user_name = TextField('Name', validators=[
         Required(),Length(max = 15)])
     password = PasswordField('Password', validators=[Required()])
-    remember_me = BooleanField('Remenber me?', default=False)
+    remember_me = BooleanField('Remember me?', default=False)
     submit = SubmitField('Log in')
 
 class SignUpForm(FlaskForm):
@@ -47,4 +48,16 @@ class AboutMeForm(FlaskForm):
 class PublishForm(FlaskForm):
     body = TextAreaField('blog content', validators = [Required()])
     submit = SubmitField('Submit')
+
+class EditProfileForm(FlaskForm):
+    email = StringField('Email', validators = [
+        Email(), Required(), Length(max=120)])
+    location = StringField('Location', validators = [Length(0, 64)])
+    about_me = TextAreaField('About me', validators=[
+        Required(), Length(max=140)])
+    submit = SubmitField('Yes!')
+
+    def validate_user_email(self, field):
+        if User.query.filter_by(email = field.data).first():
+            raise ValidationError('Email already exists.')
 
