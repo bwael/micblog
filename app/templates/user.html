@@ -38,6 +38,21 @@ Last seen : {{ user.last_seen }} -->
 </p>
 <p>{{ user.posts.count() }} blog posts. </p>
 
+<p>
+{% if user != current_user %}
+    {% if not current_user.is_following(user) %}
+    <a href="{{ url_for('follow', name=user.name) }}" class="btn btn-primary">Follow</a>
+    {% else %}
+    <a href="{{ url_for('unfollow', name=user.name) }}" class="btn btn-default">Unfollow</a>
+    {% endif %}
+{% endif %}
+<a href="{{ url_for('followers', name=user.name) }}">Followers: <span class="badge">{{ user.followers.count() - 1 }}</span></a>
+<a href="{{ url_for('followed_by', name=user.name) }}">Following: <span class="badge">{{ user.followed.count() - 1 }}</span></a>
+{% if current_user.is_authenticated and user != current_user and user.is_following(current_user) %}
+| <span class="label label-default">Follows you</span>
+{% endif %}
+</p>
+
 {% if user == current_user %}
 <a href="{{ url_for('publish', user_id=user.id) }}">Want to publish blogs?</a>
 {% endif %}

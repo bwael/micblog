@@ -3,7 +3,7 @@
 # @Author: bwael
 # @Date:   2017-01-04 20:49:12
 # @Last Modified by:   bwael
-# @Last Modified time: 2017-01-10 18:35:57
+# @Last Modified time: 2017-01-10 21:14:46
 
 from datetime import datetime
 import hashlib
@@ -15,6 +15,13 @@ from flask_login import UserMixin, AnonymousUserMixin, login_manager
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
+
+class Follow(db.Model):
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime(), default=datetime.now)
 
 class User(db.Model):
     #每个属性定义一个字段
@@ -30,17 +37,58 @@ class User(db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.now)
     last_seen = db.Column(db.DateTime(), default=datetime.now)
     avatar_hash = db.Column(db.String(32))
+    followed = db.relationship('Follow',
+                               foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
+    followers = db.relationship('Follow',
+                                foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
+
+    @staticmethod
+    def add_self_follows():
+        for user in User.query.all():
+            if not user.is_following(user):
+                user.follow(user)
+                db.session.add(user)
+                db.session.commit()
+
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+            db.session.commit()
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+            db.session.commit()
+
+    def is_following(self, user):
+        return self.followed.filter_by(
+            followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.followers.filter_by(
+            follower_id=user.id).first() is not None
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+            .filter(Follow.follower_id == self.id)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-    # if self.role is None:
-    #     if self.email == current_app.config['FLASKY_ADMIN']:
-    #         self.role = Role.query.filter_by(permissions=0xff).first()
-    #     if self.role is None:
-    #         self.role = Role.query.filter_by(default=True).first()
+
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = hashlib.md5(
                 self.email.encode('utf-8')).hexdigest()
+        #自我关注
+        self.followed.append(Follow(followed=self))
 
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
