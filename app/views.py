@@ -3,14 +3,15 @@
 # @Author: bwael
 # @Date:   2017-01-03 20:32:01
 # @Last Modified by:  bwael
-# @Last Modified time: 2017-01-10 14:25:11
+# @Last Modified time: 2017-01-10 15:06:01
 
 import datetime
 import time
 import hashlib
 
 from flask_login import login_user, logout_user, current_user, login_required
-from flask import render_template, flash, redirect, session, url_for, request, g
+from flask import render_template, flash, redirect, session, \
+     url_for, request, g
 
 from app.forms import LoginForm, SignUpForm, AboutMeForm, PublishForm, EditProfileForm
 from app.models import User, Post, ROLE_USER, ROLE_ADMIN, Role
@@ -118,9 +119,11 @@ def users(user_id, page):
     user = User.query.filter(User.id == user_id).first()
     #blogs = user.posts.paginate(1, PER_PAGE, False).items
 
-    if not user:
+    #使用模板的404.html
+    if user is None:
+        #abort(404)
         flash('The user is not exist!')
-        return redirect(url_for('index'))
+        return render_template('404.html')
     #blogs = user.posts.all()
 
     if user_id != current_user.id:
